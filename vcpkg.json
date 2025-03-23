@@ -1,0 +1,14 @@
+{
+	"name": "playerrotationwithgamepadsupport",
+	"version-string": "1.0.0",
+	"description": "A a rather striking and descriptive piece of text.",
+	"features": {
+		"plugin": {
+			"description": "Default Plugin",
+			"dependencies": [ "commonlibsse-ng", "toml11" ]
+		}
+	},
+	"default-features": [
+		"plugin"
+	]
+}
