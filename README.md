@@ -1,0 +1,3 @@
+I was annoyed that none of the new racemenu rotation mods worked like the old one that never got updated. The closest by far was "Another RaceMenu Rotation Mod" which allowed smooth rotation with right click but had no gamepad support.
+(Yes, I do play skyrim with a controller. Deal with it.) So, I saw the creator of that mod had linked his source files and I wanted the thumbstick rotation in the game like the old mod so I added it.
+I did not recieve permission from the mod author and this is my first release so if asked I will remove it but, hopefully in the event that happens they will add my changes to the existing mod.
