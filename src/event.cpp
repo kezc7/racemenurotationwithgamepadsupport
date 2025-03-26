@@ -71,6 +71,7 @@ RE::BSEventNotifyControl EventManager::ProcessEvent(RE::InputEvent* const* event
                 {
                     // Simulate mouse input based on thumbstick movement
                     auto thumbstick_event = reinterpret_cast<RE::ThumbstickEvent*>(input_event->AsIDEvent());
+					if (thumbstick_event->IsRight())// Only use right thumbstick
                     mouse_delta_x = static_cast<int32_t>(thumbstick_event->xValue * 10); // Scale the thumbstick value to simulate mouse movement
                     allow_rotate = true; // Allow rotation when thumbstick is moved
                     break;
