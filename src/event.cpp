@@ -11,15 +11,15 @@ void EventManager::update(float delta)
 		if (auto root = player->Get3D(false))
 		{
 			int dir = (mouse_delta_x > 0 || gamepad_delta_x > 0) ? -1 : 1;
-            float delta_x = std::abs(mouse_delta_x) > 0.0f ? static_cast<float>(mouse_delta_x) : static_cast<float>(gamepad_delta_x);
+			float delta_x = std::abs(mouse_delta_x) > 0.0f ? static_cast<float>(mouse_delta_x) : static_cast<float>(gamepad_delta_x);
 			angle.z += dir * delta * std::lerp(config::min_rotate_speed, config::max_rotate_speed, std::abs(delta_x) / 360.f);
 
 			root->local.rotate.SetEulerAnglesXYZ(angle);
-
-			RE::NiUpdateData data;
-			root->UpdateWorldData(&data);
+			// No UpdateWorldData call — let the engine update naturally next frame
 		}
 	}
+	mouse_delta_x = 0;
+	gamepad_delta_x = 0;
 }
 
 RE::BSEventNotifyControl EventManager::ProcessEvent(RE::InputEvent* const* event, [[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* event_source)
@@ -69,11 +69,12 @@ RE::BSEventNotifyControl EventManager::ProcessEvent(RE::InputEvent* const* event
 				}
                 case RE::INPUT_EVENT_TYPE::kThumbstick:
                 {
-                    // Simulate mouse input based on thumbstick movement
                     auto thumbstick_event = reinterpret_cast<RE::ThumbstickEvent*>(input_event->AsIDEvent());
-					if (thumbstick_event->IsRight())// Only use right thumbstick
-                    mouse_delta_x = static_cast<int32_t>(thumbstick_event->xValue * 10); // Scale the thumbstick value to simulate mouse movement
-                    allow_rotate = true; // Allow rotation when thumbstick is moved
+                    if (thumbstick_event->IsRight())
+                    {
+                        gamepad_delta_x = static_cast<int32_t>(thumbstick_event->xValue * 10);
+                        allow_rotate = std::abs(gamepad_delta_x) > 0;
+                    }
                     break;
                 }
 			}
@@ -86,11 +87,17 @@ RE::BSEventNotifyControl EventManager::ProcessEvent(const RE::MenuOpenCloseEvent
 {
 	if (event && event->menuName == RE::RaceSexMenu::MENU_NAME)
 	{
-		if (event->opening) 
+		if (event->opening)
 		{
-			auto player = RE::PlayerCharacter::GetSingleton();
-			if (auto root = player->Get3D(false))
-				root->local.rotate.ToEulerAnglesXYZ(angle);
+			if (auto player = RE::PlayerCharacter::GetSingleton())
+				if (auto root = player->Get3D(false))
+					root->local.rotate.ToEulerAnglesXYZ(angle);
+		}
+		else
+		{
+			allow_rotate = false;
+			mouse_delta_x = 0;
+			gamepad_delta_x = 0;
 		}
 	}
 	return RE::BSEventNotifyControl::kContinue;
