@@ -1,0 +1,5 @@
+out/
+build/
+.vs/
+.claude/worktrees/
+.claude/settings.local.json

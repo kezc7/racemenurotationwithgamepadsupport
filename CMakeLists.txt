@@ -7,7 +7,7 @@ set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CAC
 project(
 	PlayerRotationGPSupport
 	VERSION 1.2.0
-	DESCRIPTION "A rather striking and descriptive piece of text."
+	DESCRIPTION "SKSE plugin adding RaceMenu player rotation with gamepad support."
 	LANGUAGES CXX
 )
 

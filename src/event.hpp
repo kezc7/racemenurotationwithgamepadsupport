@@ -19,9 +19,9 @@ public:
 	RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const*, RE::BSTEventSource<RE::InputEvent*>*) override;
 	RE::BSEventNotifyControl ProcessEvent(const RE::MenuOpenCloseEvent*, RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override;
 
-	bool allow_rotate;
-	int32_t mouse_delta_x;
-	int32_t gamepad_delta_x;
+	bool allow_rotate { false };
+	float mouse_delta_x { 0.f };
+	float gamepad_delta_x { 0.f };
 	RE::NiPoint3 angle;
 };
 

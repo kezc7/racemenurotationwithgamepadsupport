@@ -9,8 +9,10 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
 	const auto level = spdlog::level::trace;
 	auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
 #else
-	const auto level = spdlog::level::trace;
+	const auto level = spdlog::level::info;
 	auto logPath = logger::log_directory();
+	if (!logPath)
+		return false;
 	*logPath /= "PlayerRotation.log"sv;
 
 	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logPath->string(), true);
