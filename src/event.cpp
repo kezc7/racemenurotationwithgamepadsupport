@@ -5,21 +5,22 @@ void EventManager::update(float delta)
 {
 	if (const auto player = RE::PlayerCharacter::GetSingleton(); player && allow_rotate)
 	{
-		if (std::abs(mouse_delta_x) == 0 && std::abs(gamepad_delta_x) == 0)
-			return;
-
-		if (auto root = player->Get3D(false))
+		const float delta_x = mouse_delta_x != 0.f ? mouse_delta_x : gamepad_delta_x;
+		if (delta_x != 0.f)
 		{
-			int dir = (mouse_delta_x > 0 || gamepad_delta_x > 0) ? -1 : 1;
-			float delta_x = std::abs(mouse_delta_x) > 0.0f ? static_cast<float>(mouse_delta_x) : static_cast<float>(gamepad_delta_x);
-			angle.z += dir * delta * std::lerp(config::min_rotate_speed, config::max_rotate_speed, std::abs(delta_x) / 360.f);
+			if (auto root = player->Get3D(false))
+			{
+				const float dir = delta_x > 0.f ? -1.f : 1.f;
+				const float speed_t = std::min(std::abs(delta_x) / 360.f, 1.f);
+				angle.z += dir * delta * std::lerp(config::min_rotate_speed, config::max_rotate_speed, speed_t);
 
-			root->local.rotate.SetEulerAnglesXYZ(angle);
-			// No UpdateWorldData call — let the engine update naturally next frame
+				root->local.rotate.SetEulerAnglesXYZ(angle);
+				// No UpdateWorldData call — let the engine update naturally next frame
+			}
 		}
 	}
-	mouse_delta_x = 0;
-	gamepad_delta_x = 0;
+	mouse_delta_x = 0.f;
+	gamepad_delta_x = 0.f;
 }
 
 RE::BSEventNotifyControl EventManager::ProcessEvent(RE::InputEvent* const* event, [[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* event_source)
@@ -36,13 +37,17 @@ RE::BSEventNotifyControl EventManager::ProcessEvent(RE::InputEvent* const* event
 				case RE::INPUT_EVENT_TYPE::kButton:
 				{
 					auto button_event = input_event->AsButtonEvent();
-					if (!(button_event && button_event->IsHeld()))
+					// Gamepad rotation is gated by the thumbstick, not a button
+					if (!button_event || button_event->GetDevice() == RE::INPUT_DEVICE::kGamepad)
+						continue;
+
+					if (!button_event->IsHeld())
 					{
 						allow_rotate = false;
 						continue;
 					}
 
-					switch (input_event->GetDevice())
+					switch (button_event->GetDevice())
 					{
 						case RE::INPUT_DEVICE::kKeyboard:
 							if (const auto key = button_event->GetIDCode(); key == config::key_code)
@@ -52,7 +57,7 @@ RE::BSEventNotifyControl EventManager::ProcessEvent(RE::InputEvent* const* event
 							}
 							break;
 						case RE::INPUT_DEVICE::kMouse:
-							if (const auto mouseButton = button_event->GetIDCode(); mouseButton == (config::key_code - 0x100))
+							if (config::key_code >= 0x100 && button_event->GetIDCode() == config::key_code - 0x100)
 							{
 								allow_rotate = true;
 								continue;
@@ -64,19 +69,20 @@ RE::BSEventNotifyControl EventManager::ProcessEvent(RE::InputEvent* const* event
 				case RE::INPUT_EVENT_TYPE::kMouseMove:
 				{
 					auto mouse_event = reinterpret_cast<RE::MouseMoveEvent*>(input_event->AsIDEvent());
-					mouse_delta_x = mouse_event->mouseInputX;
+					mouse_delta_x = static_cast<float>(mouse_event->mouseInputX);
 					break;
 				}
-                case RE::INPUT_EVENT_TYPE::kThumbstick:
-                {
-                    auto thumbstick_event = reinterpret_cast<RE::ThumbstickEvent*>(input_event->AsIDEvent());
-                    if (thumbstick_event->IsRight())
-                    {
-                        gamepad_delta_x = static_cast<int32_t>(thumbstick_event->xValue * 10);
-                        allow_rotate = std::abs(gamepad_delta_x) > 0;
-                    }
-                    break;
-                }
+				case RE::INPUT_EVENT_TYPE::kThumbstick:
+				{
+					auto thumbstick_event = reinterpret_cast<RE::ThumbstickEvent*>(input_event->AsIDEvent());
+					if (thumbstick_event->IsRight())
+					{
+						// Full deflection (|xValue| == 1) maps to max_rotate_speed, matching a 360-unit mouse delta
+						gamepad_delta_x = thumbstick_event->xValue * 360.f;
+						allow_rotate = gamepad_delta_x != 0.f;
+					}
+					break;
+				}
 			}
 		}
 	}
@@ -96,8 +102,8 @@ RE::BSEventNotifyControl EventManager::ProcessEvent(const RE::MenuOpenCloseEvent
 		else
 		{
 			allow_rotate = false;
-			mouse_delta_x = 0;
-			gamepad_delta_x = 0;
+			mouse_delta_x = 0.f;
+			gamepad_delta_x = 0.f;
 		}
 	}
 	return RE::BSEventNotifyControl::kContinue;
