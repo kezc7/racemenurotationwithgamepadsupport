@@ -1,5 +1,12 @@
 # Racemenu Rotation with Gamepad Support NG
 
+## Version 1.2.0 — Skyrim 1.7.104 support
+
+This release supports Skyrim SE/AE 1.6.1170 and 1.7.104 with the matching
+SKSE and Address Library releases. For Skyrim 1.7.104, install SKSE64 2.3.1
+and Address Library for SKSE Plugins v13 or later before installing this DLL.
+It is not compatible with Skyrim VR.
+
 A fork of [Racemenu Rotation with Gamepad Support](https://www.nexusmods.com/skyrimspecialedition/mods/XXXXX) 
 by [Thewyrmking95](https://github.com/Thewyrmking95), which is itself a fork of 
 [Another RaceMenu Rotation Mod](https://www.nexusmods.com/skyrimspecialedition/mods/XXXXX) 

@@ -3,6 +3,28 @@
 #include "event.hpp"
 #include "spdlog/logger.h"
 
+// The CMake helper in older CommonLibSSE-NG releases emits an obsolete plugin
+// declaration.  Define it directly so SKSE 2.3.x sees both Address Library use
+// and the v5 database-format compatibility bit.
+SKSEPluginVersion = []() noexcept
+{
+	auto version = SKSE::PluginVersionData{};
+	version.PluginVersion({ 1, 2, 0, 0 });
+	version.PluginName("PlayerRotationGPSupport"sv);
+	version.AuthorName("kezc7"sv);
+	version.UsesAddressLibrary();
+	return version;
+}();
+
+extern "C" [[maybe_unused]] __declspec(dllexport) bool SKSEPlugin_Query(
+	[[maybe_unused]] const SKSE::QueryInterface*, SKSE::PluginInfo* pluginInfo)
+{
+	pluginInfo->infoVersion = SKSE::PluginInfo::kVersion;
+	pluginInfo->name = SKSEPlugin_Version.pluginName;
+	pluginInfo->version = SKSEPlugin_Version.pluginVersion;
+	return true;
+}
+
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
 #ifndef NDEBUG
