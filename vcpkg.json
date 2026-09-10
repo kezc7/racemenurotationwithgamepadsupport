@@ -1,14 +1,16 @@
 {
 	"name": "playerrotationwithgamepadsupport",
-	"version-string": "1.1.0",
+	"version-string": "1.3.0",
 	"description": "SKSE plugin adding RaceMenu player rotation with gamepad support.",
-	"features": {
-		"plugin": {
-			"description": "Default Plugin",
-			"dependencies": [ "commonlibsse-ng", "toml11" ]
-		}
-	},
-	"default-features": [
-		"plugin"
+	"dependencies": [
+		"directxmath",
+		"directxtk",
+		"fmt",
+		"nlohmann-json",
+		"rapidcsv",
+		"simpleini",
+		"spdlog",
+		"toml11",
+		"xbyak"
 	]
 }
