@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CAC
 
 project(
 	PlayerRotationGPSupport
-	VERSION 1.2.0
+	VERSION 1.3.0
 	DESCRIPTION "SKSE plugin adding RaceMenu player rotation with gamepad support."
 	LANGUAGES CXX
 )
@@ -18,7 +18,8 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 set(headers src/pch.hpp
 			src/config.hpp
 			src/event.hpp
-			src/hooks.hpp)
+			src/hooks.hpp
+			src/runtime_state.hpp)
 set(sources src/event.cpp
 			src/plugin.cpp
 			src/hooks.cpp)
@@ -47,3 +48,14 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         $<INSTALL_INTERFACE:src>)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_precompile_headers(${PROJECT_NAME} PRIVATE src/pch.hpp)
+
+option(PLAYER_ROTATION_BUILD_TESTS "Build lifecycle state tests" OFF)
+if (PLAYER_ROTATION_BUILD_TESTS)
+	enable_testing()
+	add_executable(PlayerRotationStateTests tests/runtime_state_test.cpp)
+	target_include_directories(PlayerRotationStateTests PRIVATE src)
+	if (MSVC)
+		target_compile_options(PlayerRotationStateTests PRIVATE /W4 /WX)
+	endif ()
+	add_test(NAME PlayerRotationStateTests COMMAND PlayerRotationStateTests)
+endif ()

@@ -2,5 +2,5 @@
 
 namespace hooks
 {
-    void install();
+    bool install();
 }

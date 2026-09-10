@@ -1,6 +1,6 @@
 {
 	"name": "playerrotationwithgamepadsupport",
-	"version-string": "1.2.0",
+	"version-string": "1.3.0",
 	"description": "SKSE plugin adding RaceMenu player rotation with gamepad support.",
 	"dependencies": [
 		"directxmath",
