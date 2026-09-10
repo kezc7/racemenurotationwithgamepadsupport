@@ -1,41 +1,71 @@
-# Racemenu Rotation with Gamepad Support NG
+# RaceMenu Rotation with Gamepad Support NG
 
-## Version 1.2.0 — Skyrim 1.7.104 support
+## Version 1.3.0
 
-This release supports Skyrim SE/AE 1.6.1170 and 1.7.104 with the matching
-SKSE and Address Library releases. For Skyrim 1.7.104, install SKSE64 2.3.1
-and Address Library for SKSE Plugins v13 or later before installing this DLL.
-It is not compatible with Skyrim VR.
+RaceMenu player rotation with mouse/keyboard and right-thumbstick support.
+This release uses one CommonLibSSE-NG-compatible DLL for the supported flat
+Skyrim runtimes:
 
-A fork of [Racemenu Rotation with Gamepad Support](https://www.nexusmods.com/skyrimspecialedition/mods/XXXXX) 
-by [Thewyrmking95](https://github.com/Thewyrmking95), which is itself a fork of 
-[Another RaceMenu Rotation Mod](https://www.nexusmods.com/skyrimspecialedition/mods/XXXXX) 
-by DarkMatterValkyrie.
+- Skyrim SE/AE 1.6.1170
+- Skyrim 1.7.104
 
-## Why This Exists
+Requirements:
 
-While investigating game crashes, a crash log pointed to `PlayerRotationGPSupport.dll` 
-running code outside of RaceMenu during normal gameplay — something it should never do.
+- SKSE64 matching the installed Skyrim runtime
+- Address Library for SKSE Plugins matching the installed runtime
+- RaceMenu
 
-Looking at the source code revealed 5 bugs, including one that caused crashes by doing 
-an unnecessary and unsafe scene graph traversal every frame. This fork fixes all of them.
+This plugin is not compatible with Skyrim VR.
 
-## Bugs Fixed
+## Installation
 
-1. **Game crash** — Redundant `UpdateWorldData` call corrupted game memory every frame
-2. **Gamepad rotation stuck on** — `allow_rotate` was never reset when releasing the thumbstick
-3. **Rotation persisting after menu close** — State was never cleaned up when RaceMenu closed
-4. **Gamepad rotation never worked** — Thumbstick input was stored in the wrong variable
-5. **Missing null check** — Player reference was not checked before use on menu open
+Install the release ZIP through Mod Organizer 2 or Vortex. Its contents are
+already relative to the Skyrim `Data` directory:
+
+```text
+SKSE/Plugins/PlayerRotationGPSupport.dll
+SKSE/Plugins/PlayerRotation.toml
+```
+
+Existing users can upgrade in place. No new game, save cleaning, or removal of
+unrelated mods is required. The plugin has no Papyrus scripts, ESP, persistent
+save data, or SKSE co-save data.
+
+## Configuration
+
+The optional configuration file is `Data/SKSE/Plugins/PlayerRotation.toml`:
+
+```toml
+KeyCode = 257
+MinimumRotationSpeed = 3.0
+MaximumRotationSpeed = 12.0
+```
+
+`KeyCode` uses SKSE input codes: keyboard keys are DirectX scancodes 0–255;
+mouse buttons start at 256 (`257` is the right mouse button). The configured
+keyboard/mouse button must be held while moving the mouse. Gamepad rotation
+uses the right thumbstick and does not depend on `KeyCode`.
+
+## 1.3.0 crash and lifecycle fix
+
+The plugin now disables rotation work during Skyrim save/load/revert
+transitions, form initialization, player positioning, quit/reset transitions,
+and player 3D reconstruction. It clears temporary input and rotation state on
+load, new-game, save, and RaceMenu lifecycle events, waits for post-load/new-
+game settling, and reacquires the player 3D root instead of retaining scene
+graph pointers across frames or loads.
+
+Input handling now uses CommonLibSSE-NG type-safe event accessors. Relocations
+are validated before the Main update hook is installed; unsupported runtimes
+fail closed instead of patching an invalid address.
+
+The crash investigation identified unsafe lifecycle exposure in the plugin,
+but the supplied crash stack also contained another native plugin, so this
+release does not claim that PlayerRotationGPSupport was conclusively the only
+faulting component.
 
 ## Credits
 
-- [DarkMatterValkyrie](https://www.nexusmods.com/skyrimspecialedition/users/XXXXX) — Original mod
-- [Thewyrmking95](https://github.com/Thewyrmking95) — Gamepad fork
-- Bug fixes by [kezc](https://www.nexusmods.com/profile/kezc)
-
-
-Original
-I was annoyed that none of the new racemenu rotation mods worked like the old one that never got updated. The closest by far was "Another RaceMenu Rotation Mod" which allowed smooth rotation with right click but had no gamepad support.
-(Yes, I do play skyrim with a controller. Deal with it.) So, I saw the creator of that mod had linked their source files and I wanted the thumbstick rotation in the game like the old mod so I added it.
-I did not recieve permission from the mod author and this is my first release so if asked I will remove it but, hopefully in the event that happens they will add my changes to the existing mod.
+- DarkMatterValkyrie — original RaceMenu rotation mod
+- Thewyrmking95 — gamepad fork
+- kezc7 — NG port and fixes
