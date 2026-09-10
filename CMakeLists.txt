@@ -6,37 +6,40 @@ set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CAC
 
 project(
 	PlayerRotationGPSupport
-	VERSION 1.1.0
+	VERSION 1.3.0
 	DESCRIPTION "SKSE plugin adding RaceMenu player rotation with gamepad support."
 	LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
 set(headers src/pch.hpp
 			src/config.hpp
 			src/event.hpp
-			src/hooks.hpp)
+			src/hooks.hpp
+			src/runtime_state.hpp)
 set(sources src/event.cpp
 			src/plugin.cpp
 			src/hooks.cpp)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${sources})
 
-find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(toml11 CONFIG REQUIRED)
+set(COMMONLIB_PREBUILT OFF CACHE BOOL "Build CommonLibSSE from source with this project's static runtime" FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "Do not build CommonLibSSE's own test suite" FORCE)
+add_subdirectory(lib/commonlibsse-ng EXCLUDE_FROM_ALL)
 
-add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${headers} ${sources})
+add_library(${PROJECT_NAME} SHARED ${headers} ${sources})
 add_library("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS "${PROJECT_NAME}")
 
 target_link_libraries(${PROJECT_NAME} PUBLIC CommonLibSSE::CommonLibSSE)
 target_link_libraries(${PROJECT_NAME} PUBLIC toml11::toml11)
 
 if (MSVC)
-  	add_compile_definitions(_UNICODE)
-	target_compile_options("${PROJECT_NAME}" PRIVATE /W4 /WX)
+	add_compile_definitions(_UNICODE NOMINMAX)
+	target_compile_options("${PROJECT_NAME}" PRIVATE /EHsc /W4 /WX)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -45,3 +48,14 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         $<INSTALL_INTERFACE:src>)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_precompile_headers(${PROJECT_NAME} PRIVATE src/pch.hpp)
+
+option(PLAYER_ROTATION_BUILD_TESTS "Build lifecycle state tests" OFF)
+if (PLAYER_ROTATION_BUILD_TESTS)
+	enable_testing()
+	add_executable(PlayerRotationStateTests tests/runtime_state_test.cpp)
+	target_include_directories(PlayerRotationStateTests PRIVATE src)
+	if (MSVC)
+		target_compile_options(PlayerRotationStateTests PRIVATE /W4 /WX)
+	endif ()
+	add_test(NAME PlayerRotationStateTests COMMAND PlayerRotationStateTests)
+endif ()

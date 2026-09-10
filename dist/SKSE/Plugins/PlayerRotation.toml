@@ -1,5 +1,4 @@
 # PlayerRotation configuration
-# Place this file at Data\SKSE\Plugins\PlayerRotation.toml
 
 # Mouse/keyboard button held to rotate the character in RaceMenu.
 # Uses SKSE input codes: keyboard keys are DirectX scancodes (0-255),
